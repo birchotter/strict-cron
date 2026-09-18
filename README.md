@@ -45,6 +45,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	// The next run strictly after a given time, and the next five after that.
+	next, ok := sched.Next(someTime)
+	fmt.Println(next, ok)
+	fmt.Println(sched.NextN(someTime, 5))
 }
 ```
 
@@ -63,6 +68,13 @@ valid: @daily
 $ go run ./cmd/croncheck --at 2026-09-16T09:00:00Z "0 9 * * 1-5"
 valid: 0 9 * * 1-5
 matches 2026-09-16T09:00:00Z
+
+$ go run ./cmd/croncheck --at 2026-09-16T09:00:00Z --next 3 "0 9 * * 1-5"
+valid: 0 9 * * 1-5
+matches 2026-09-16T09:00:00Z
+next: 2026-09-17T09:00:00Z
+next: 2026-09-18T09:00:00Z
+next: 2026-09-21T09:00:00Z
 ```
 
 ## What strict mode rejects
@@ -80,6 +92,7 @@ a value out of range for its field.
 
 ## Status
 
-Early skeleton: expression parsing, validation, and matching a single
-`time.Time` against a parsed schedule. No computation of the next N run
-times yet - see the roadmap in the issue tracker.
+Early skeleton: expression parsing, validation, matching a single
+`time.Time` against a parsed schedule, and computing the next N run times
+from a given point. No test suite yet - see the roadmap in the issue
+tracker.

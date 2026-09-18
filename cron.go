@@ -106,3 +106,44 @@ func (s *Schedule) Matches(t time.Time) bool {
 func (s *Schedule) String() string {
 	return s.raw
 }
+
+// maxSearchSpan bounds how far into the future Next will look before giving
+// up. Some valid-looking expressions never fire (e.g. day-of-month 31 paired
+// with month February), and without a bound the search would run forever.
+const maxSearchSpan = 8 * 365 * 24 * time.Hour
+
+// Next returns the first time strictly after "after" that the schedule
+// matches, to the minute. It reports false if no match is found within the
+// search bound, which means the expression can never fire (e.g. day 31 in a
+// month that never has one).
+func (s *Schedule) Next(after time.Time) (time.Time, bool) {
+	t := after.Truncate(time.Minute).Add(time.Minute)
+	limit := after.Add(maxSearchSpan)
+	for t.Before(limit) {
+		if s.Matches(t) {
+			return t, true
+		}
+		t = t.Add(time.Minute)
+	}
+	return time.Time{}, false
+}
+
+// NextN returns up to n times strictly after "after" that the schedule
+// matches, in order. It returns fewer than n if the expression can never
+// fire again within the search bound.
+func (s *Schedule) NextN(after time.Time, n int) []time.Time {
+	if n <= 0 {
+		return nil
+	}
+	out := make([]time.Time, 0, n)
+	t := after
+	for len(out) < n {
+		next, ok := s.Next(t)
+		if !ok {
+			break
+		}
+		out = append(out, next)
+		t = next
+	}
+	return out
+}
