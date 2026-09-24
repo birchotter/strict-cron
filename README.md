@@ -94,5 +94,6 @@ a value out of range for its field.
 
 Early skeleton: expression parsing, validation, matching a single
 `time.Time` against a parsed schedule, and computing the next N run times
-from a given point. No test suite yet - see the roadmap in the issue
-tracker.
+from a given point. Table-driven tests cover strict vs. lenient behavior
+for each field and the top-level `Parse` contract; see the roadmap in the
+issue tracker for what's left.
